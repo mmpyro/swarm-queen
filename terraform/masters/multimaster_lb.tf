@@ -1,8 +1,8 @@
 resource "azurerm_lb" "master_lb" {
-  count               = "${var.number_of_masters > 1 ? 1 : 0}"
+  count               = "${local.is_multi_mater}"
   name                = "master_lb"
-  location            = "${azurerm_resource_group.swarm_cluster_rg.location}"
-  resource_group_name = "${azurerm_resource_group.swarm_cluster_rg.name}"
+  location            = "${var.location}"
+  resource_group_name = "${var.resource_group_name}"
 
   frontend_ip_configuration {
     name                 = "PublicIPAddress"
@@ -12,15 +12,15 @@ resource "azurerm_lb" "master_lb" {
 
 resource "azurerm_lb_backend_address_pool" "master_lb_backend" {
   name                = "master_lb_backend"
-  resource_group_name = "${azurerm_resource_group.swarm_cluster_rg.name}"
+  resource_group_name = "${var.resource_group_name}"
   loadbalancer_id     = "${azurerm_lb.master_lb.id}"
   depends_on          = ["azurerm_lb.master_lb"]
-  count               = "${var.number_of_masters > 1 ? 1 : 0}"
+  count               = "${local.is_multi_mater}"
 }
 
 resource "azurerm_lb_nat_rule" "ssh_nat_rule" {
-  count                          = "${var.number_of_masters > 1 ? var.number_of_masters : 0}"
-  resource_group_name            = "${azurerm_resource_group.swarm_cluster_rg.name}"
+  count                          = "${local.number_of_masters}"
+  resource_group_name            = "${var.resource_group_name}"
   loadbalancer_id                = "${azurerm_lb.master_lb.id}"
   name                           = "ssh_master${count.index}"
   protocol                       = "Tcp"
@@ -31,16 +31,16 @@ resource "azurerm_lb_nat_rule" "ssh_nat_rule" {
 }
 
 resource "azurerm_lb_probe" "docker_port_probe" {
-  resource_group_name = "${azurerm_resource_group.swarm_cluster_rg.name}"
+  resource_group_name = "${var.resource_group_name}"
   loadbalancer_id     = "${azurerm_lb.master_lb.id}"
   name                = "docker_port_probe"
   port                = "${var.docker_port}"
   depends_on          = ["azurerm_lb.master_lb"]
-  count               = "${var.number_of_masters > 1 ? 1 : 0}"
+  count               = "${local.is_multi_mater}"
 }
 
 resource "azurerm_lb_rule" "docker_port_rule" {
-  resource_group_name            = "${azurerm_resource_group.swarm_cluster_rg.name}"
+  resource_group_name            = "${var.resource_group_name}"
   loadbalancer_id                = "${azurerm_lb.master_lb.id}"
   name                           = "docker_port"
   protocol                       = "Tcp"
@@ -50,5 +50,5 @@ resource "azurerm_lb_rule" "docker_port_rule" {
   probe_id                       = "${azurerm_lb_probe.docker_port_probe.id}"
   backend_address_pool_id        = "${azurerm_lb_backend_address_pool.master_lb_backend.id}"
   depends_on                     = ["azurerm_lb.master_lb"]
-  count                          = "${var.number_of_masters > 1 ? 1 : 0}"
+  count                          = "${local.is_multi_mater}"
 }

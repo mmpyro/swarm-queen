@@ -1,22 +1,22 @@
 resource "azurerm_network_interface" "single_master_network_interface" {
-  count               = "${var.number_of_masters == 1 ? 1 : 0}"
+  count               = "${local.is_single_master}"
   name                = "master${count.index}"
-  location            = "${azurerm_resource_group.swarm_cluster_rg.location}"
-  resource_group_name = "${azurerm_resource_group.swarm_cluster_rg.name}"
+  location            = "${var.location}"
+  resource_group_name = "${var.resource_group_name}"
 
   ip_configuration {
     name                          = "masterip"
-    subnet_id                     = "${azurerm_subnet.internal.id}"
-    public_ip_address_id = "${azurerm_public_ip.main.id}"
+    subnet_id                     = "${var.azurerm_subnet_id}"
+    public_ip_address_id          = "${azurerm_public_ip.main.id}"
     private_ip_address_allocation = "Dynamic"
   }
 }
 
 resource "azurerm_virtual_machine" "signle_master_vm" {
-  count                 = "${var.number_of_masters == 1 ? 1 : 0}"
+  count                 = "${local.is_single_master}"
   name                  = "master${count.index}"
-  location              = "${azurerm_resource_group.swarm_cluster_rg.location}"
-  resource_group_name   = "${azurerm_resource_group.swarm_cluster_rg.name}"
+  location              = "${var.location}"
+  resource_group_name   = "${var.resource_group_name}"
   network_interface_ids = ["${azurerm_network_interface.single_master_network_interface.id}"]
   vm_size               = "${var.master_vm_size}"
 
@@ -25,8 +25,8 @@ resource "azurerm_virtual_machine" "signle_master_vm" {
 
   storage_image_reference {
     publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "18.04-LTS"
+    offer     = "${var.os_name}"
+    sku       = "${var.os_version}"
     version   = "latest"
   }
   storage_os_disk {

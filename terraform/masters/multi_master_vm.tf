@@ -1,20 +1,20 @@
 resource "azurerm_availability_set" "master_avaibility_set" {
-  count               = "${var.number_of_masters > 1 ? 1 : 0}"
+  count               = "${local.is_multi_mater}"
   name                = "master_avaibility_set"
-  location            = "${azurerm_resource_group.swarm_cluster_rg.location}"
-  resource_group_name = "${azurerm_resource_group.swarm_cluster_rg.name}"
+  location            = "${var.location}"
+  resource_group_name = "${var.resource_group_name}"
   managed             = true
 }
 
 resource "azurerm_network_interface" "master_network_interface" {
-  count               = "${var.number_of_masters > 1 ? var.number_of_masters : 0}"
+  count               = "${local.number_of_masters}"
   name                = "master${count.index}"
-  location            = "${azurerm_resource_group.swarm_cluster_rg.location}"
-  resource_group_name = "${azurerm_resource_group.swarm_cluster_rg.name}"
+  location            = "${var.location}"
+  resource_group_name = "${var.resource_group_name}"
 
   ip_configuration {
     name                          = "masterip"
-    subnet_id                     = "${azurerm_subnet.internal.id}"
+    subnet_id                     = "${var.azurerm_subnet_id}"
     private_ip_address_allocation = "Dynamic"
     load_balancer_backend_address_pools_ids = ["${azurerm_lb_backend_address_pool.master_lb_backend.id}"]
     load_balancer_inbound_nat_rules_ids = ["${azurerm_lb_nat_rule.ssh_nat_rule.*.id[count.index]}"]
@@ -22,10 +22,10 @@ resource "azurerm_network_interface" "master_network_interface" {
 }
 
 resource "azurerm_virtual_machine" "master_vm" {
-  count                 = "${var.number_of_masters > 1 ? var.number_of_masters : 0}"
+  count                 = "${local.number_of_masters}"
   name                  = "master${count.index}"
-  location              = "${azurerm_resource_group.swarm_cluster_rg.location}"
-  resource_group_name   = "${azurerm_resource_group.swarm_cluster_rg.name}"
+  location              = "${var.location}"
+  resource_group_name   = "${var.resource_group_name}"
   network_interface_ids = ["${azurerm_network_interface.master_network_interface.*.id[count.index]}"]
   vm_size               = "${var.master_vm_size}"
   availability_set_id   = "${azurerm_availability_set.master_avaibility_set.id}"
@@ -35,8 +35,8 @@ resource "azurerm_virtual_machine" "master_vm" {
 
   storage_image_reference {
     publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "18.04-LTS"
+    offer     = "${var.os_name}"
+    sku       = "${var.os_version}"
     version   = "latest"
   }
   storage_os_disk {

@@ -1,5 +1,5 @@
 variable "rg_name" {
-  default = "dev-swarm-weuro"
+  default = "dev-swarm2-weuro"
 }
 
 variable "location" {
@@ -14,6 +14,10 @@ variable "master_vm_size" {
   default = "Standard_B2ms"
 }
 
+variable "worker_vm_size" {
+  default = "Standard_B2ms"
+}
+
 variable "vm_username" {
   default = "mm"
 }
@@ -23,6 +27,10 @@ variable "vm_password" {
 }
 
 variable "number_of_masters" {
+  default = "2"
+}
+
+variable "number_of_workers" {
   default = "2"
 }
 
