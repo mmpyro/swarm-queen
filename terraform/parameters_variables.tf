@@ -7,7 +7,7 @@ variable "location" {
 }
 
 variable "ssh_master_source_address" {
-    default = "89.64.46.239"
+    default = "89.64.49.27"
 }
 
 variable "master_vm_size" {

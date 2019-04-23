@@ -14,10 +14,12 @@ resource "azurerm_lb_backend_address_pool" "master_lb_backend" {
   name                = "master_lb_backend"
   resource_group_name = "${azurerm_resource_group.swarm_cluster_rg.name}"
   loadbalancer_id     = "${azurerm_lb.master_lb.id}"
+  depends_on          = ["azurerm_lb.master_lb"]
+  count               = "${var.number_of_masters > 1 ? 1 : 0}"
 }
 
 resource "azurerm_lb_nat_rule" "ssh_nat_rule" {
-  count                          = "${var.number_of_masters}"
+  count                          = "${var.number_of_masters > 1 ? var.number_of_masters : 0}"
   resource_group_name            = "${azurerm_resource_group.swarm_cluster_rg.name}"
   loadbalancer_id                = "${azurerm_lb.master_lb.id}"
   name                           = "ssh_master${count.index}"
@@ -25,6 +27,7 @@ resource "azurerm_lb_nat_rule" "ssh_nat_rule" {
   frontend_port                  = "${5000 + count.index}"
   backend_port                   = 22
   frontend_ip_configuration_name = "PublicIPAddress"
+  depends_on                     = ["azurerm_lb.master_lb"]
 }
 
 resource "azurerm_lb_probe" "docker_port_probe" {
@@ -32,6 +35,8 @@ resource "azurerm_lb_probe" "docker_port_probe" {
   loadbalancer_id     = "${azurerm_lb.master_lb.id}"
   name                = "docker_port_probe"
   port                = "${var.docker_port}"
+  depends_on          = ["azurerm_lb.master_lb"]
+  count               = "${var.number_of_masters > 1 ? 1 : 0}"
 }
 
 resource "azurerm_lb_rule" "docker_port_rule" {
@@ -44,4 +49,6 @@ resource "azurerm_lb_rule" "docker_port_rule" {
   frontend_ip_configuration_name = "PublicIPAddress"
   probe_id                       = "${azurerm_lb_probe.docker_port_probe.id}"
   backend_address_pool_id        = "${azurerm_lb_backend_address_pool.master_lb_backend.id}"
+  depends_on                     = ["azurerm_lb.master_lb"]
+  count                          = "${var.number_of_masters > 1 ? 1 : 0}"
 }
