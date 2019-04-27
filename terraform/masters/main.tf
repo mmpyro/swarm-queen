@@ -10,3 +10,7 @@ resource "azurerm_public_ip" "main" {
   resource_group_name = "${var.resource_group_name}"
   allocation_method   = "Dynamic"
 }
+
+output "master_ip" {
+  value = "${azurerm_public_ip.main.ip_address}"
+}

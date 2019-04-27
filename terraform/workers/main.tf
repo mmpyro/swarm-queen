@@ -95,3 +95,7 @@ resource "azurerm_virtual_machine_scale_set" "worker_vmss" {
     }
   }
 }
+
+output "worker_ip" {
+  value = "${azurerm_public_ip.worker_ip.ip_address}"
+}
