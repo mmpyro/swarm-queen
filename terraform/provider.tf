@@ -13,8 +13,9 @@ module "masters" {
   location            = "${azurerm_resource_group.swarm_cluster_rg.location}"
   azurerm_subnet_id   = "${azurerm_subnet.internal.id}"
   vm_username         = "${var.vm_username}"
-  vm_password         = "${var.vm_password}"
   number_of_masters   = "${var.number_of_masters}"
+  key_name            = "${var.key_name}"
+  key_path            = "${var.key_path}"
 }
 
 module "workers" {
@@ -24,8 +25,9 @@ module "workers" {
   location            = "${azurerm_resource_group.swarm_cluster_rg.location}"
   azurerm_subnet_id   = "${azurerm_subnet.internal.id}"
   vm_username         = "${var.vm_username}"
-  vm_password         = "${var.vm_password}"
   number_of_workers   = "${var.number_of_workers}"
+  key_name            = "${var.key_name}"
+  key_path            = "${var.key_path}"
 }
 
 

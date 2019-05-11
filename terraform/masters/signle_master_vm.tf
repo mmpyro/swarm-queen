@@ -38,9 +38,14 @@ resource "azurerm_virtual_machine" "signle_master_vm" {
   os_profile {
     computer_name  = "master${count.index}"
     admin_username = "${var.vm_username}"
-    admin_password = "${var.vm_password}"
   }
-  os_profile_linux_config {
-    disable_password_authentication = false
+
+   os_profile_linux_config {
+    disable_password_authentication = true
+
+    ssh_keys {
+      path     = "/home/${var.vm_username}/.ssh/authorized_keys"
+      key_data = "${file("${var.key_path}/${var.key_name}")}"
+    }
   }
 }

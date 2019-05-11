@@ -1,0 +1,21 @@
+{
+  "azure": {
+    "subscriptionId": "...",
+    "clientId": "...",
+    "clientSecret": "...",
+    "tenantId": "...",
+    "resourceGroup": "dev-swarm-weuro",
+    "location": "West Europe",
+    "sshAllowedIpAddress": "..."
+  },
+  "swarm": {
+    "numberOfMasters": 1,
+    "numberOfWorkers": 3,
+    "masterVmSize": "Standard_B1ms",
+    "workerVmSize": "Standard_B1ms",
+    "vmUserName": "mm",
+    "sshKeyName": "swarm.pub",
+    "sshKeyPath": "/home/operations/ssh",
+    "dockerApiPort": 2375
+  }
+}

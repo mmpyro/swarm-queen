@@ -3,3 +3,10 @@
 Dockerfile
 **/*/.terraform
 *.tfstate
+
+
+#python
+orchestrator/.idea
+orchestrator/Include
+orchestrator/Lib
+orchestrator/Scripts

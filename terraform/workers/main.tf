@@ -28,7 +28,7 @@ resource "azurerm_lb_nat_pool" "lbnatpool" {
   loadbalancer_id                = "${azurerm_lb.worker_lb.id}"
   protocol                       = "Tcp"
   frontend_port_start            = 50000
-  frontend_port_end              = 50119
+  frontend_port_end              = 50200
   backend_port                   = 22
   frontend_ip_configuration_name = "PublicIPAddress"
 }
@@ -70,17 +70,16 @@ resource "azurerm_virtual_machine_scale_set" "worker_vmss" {
   os_profile {
     computer_name_prefix = "worker"
     admin_username       = "${var.vm_username}"
-    admin_password       = "${var.vm_password}"
   }
 
-#   os_profile_linux_config {
-#     disable_password_authentication = true
+  os_profile_linux_config {
+    disable_password_authentication = true
 
-#     ssh_keys {
-#       path     = "/home/myadmin/.ssh/authorized_keys"
-#       key_data = "${file("~/.ssh/demo_key.pub")}"
-#     }
-#   }
+    ssh_keys {
+      path     = "/home/${var.vm_username}/.ssh/authorized_keys"
+      key_data = "${file("${var.key_path}/${var.key_name}")}"
+    }
+  }
 
   network_profile {
     name    = "terraformnetworkprofile"
@@ -94,8 +93,4 @@ resource "azurerm_virtual_machine_scale_set" "worker_vmss" {
       load_balancer_inbound_nat_rules_ids    = ["${element(azurerm_lb_nat_pool.lbnatpool.*.id, count.index)}"]
     }
   }
-}
-
-output "worker_ip" {
-  value = "${azurerm_public_ip.worker_ip.ip_address}"
 }

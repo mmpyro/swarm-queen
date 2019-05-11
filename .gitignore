@@ -6,4 +6,16 @@
 *.tfstate.*
 
 # .tfvars files
-*.tfvars
+**/*/*.tfvars
+
+ssh
+setup.sh
+
+#python
+orchestrator/.idea
+orchestrator/Include
+orchestrator/Lib
+orchestrator/Scripts
+**/*/*.pyc
+**/*/*.cfg
+**/*/config.json

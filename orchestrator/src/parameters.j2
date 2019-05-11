@@ -1,0 +1,15 @@
+rg_name = "{{azure.resourceGroup}}"
+location = "{{azure.location}}"
+ssh_allowed_source_address = "{{azure.sshAllowedIpAddress}}"
+master_vm_size = "{{swarm.masterVmSize}}"
+worker_vm_size = "{{swarm.workerVmSize}}"
+vm_username = "{{swarm.vmUserName}}"
+number_of_masters = {{swarm.numberOfMasters}}
+number_of_workers = {{swarm.numberOfWorkers}}
+docker_port = {{swarm.dockerApiPort}}
+key_name = "{{swarm.sshKeyName}}"
+key_path = "{{swarm.sshKeyPath}}"
+subscription_id = "{{azure.subscriptionId}}"
+client_id       = "{{azure.clientId}}"
+client_secret   = "{{azure.clientSecret}}"
+tenant_id       = "{{azure.tenantId}}"

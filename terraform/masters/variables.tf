@@ -18,10 +18,6 @@ variable "vm_username" {
   default = ""
 }
 
-variable "vm_password" {
-  default = ""
-}
-
 variable "docker_port" {
   default = "2376"
 }
@@ -36,4 +32,11 @@ variable "os_name" {
 
 variable "os_version" {
   default = "18.04-LTS"
+}
+variable "key_name" {
+  default = ""
+}
+
+variable "key_path" {
+  default = ""
 }

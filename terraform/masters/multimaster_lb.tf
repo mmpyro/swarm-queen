@@ -24,7 +24,7 @@ resource "azurerm_lb_nat_rule" "ssh_nat_rule" {
   loadbalancer_id                = "${azurerm_lb.master_lb.id}"
   name                           = "ssh_master${count.index}"
   protocol                       = "Tcp"
-  frontend_port                  = "${5000 + count.index}"
+  frontend_port                  = "${50000 + count.index}"
   backend_port                   = 22
   frontend_ip_configuration_name = "PublicIPAddress"
   depends_on                     = ["azurerm_lb.master_lb"]

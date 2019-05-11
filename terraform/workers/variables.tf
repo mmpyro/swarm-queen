@@ -18,10 +18,6 @@ variable "vm_username" {
   default = ""
 }
 
-variable "vm_password" {
-  default = ""
-}
-
 variable "azurerm_subnet_id" {
   default = ""
 }
@@ -36,4 +32,12 @@ variable "worker_vm_size" {
 
 variable "worker_vm_tier" {
   default = "Standard"
+}
+
+variable "key_name" {
+  default = ""
+}
+
+variable "key_path" {
+  default = ""
 }
