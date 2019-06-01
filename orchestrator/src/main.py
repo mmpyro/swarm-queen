@@ -1,12 +1,12 @@
 from argument_parser import parse
 from process_manager import ProcessManager
 from enums.terraform_mode import TerraformMode
-from configuration_reader import JsonConfigReader
+from configuration_reader import JsonConfigReader, JsonConfigValidator
 from template_processor import TemplateProcessor
 import os
 
 cwd = os.getcwd()
-config = JsonConfigReader.read(file_name='utils/config.json')
+config = JsonConfigReader([JsonConfigValidator()]).read(file_name='utils/config.json')
 args = parse()
 terraform_directory = args.terraform_directory
 mode = TerraformMode.APPLY.value if args.mode == 'apply' else TerraformMode.DESTROY.value

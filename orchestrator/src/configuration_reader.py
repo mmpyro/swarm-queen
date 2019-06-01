@@ -19,7 +19,7 @@ class JsonConfigReader(object):
             config = json.load(file)
             config['swarm']['sshKeyPath'] = config['swarm']['sshKeyPath'].replace("\\", "\\\\")
             for validator in self.__validators:
-                validator.validate()
+                validator.validate(config)
             return config
 
 class JsonConfigValidator(ConfigValidator):
