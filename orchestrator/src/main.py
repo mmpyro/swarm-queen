@@ -11,7 +11,8 @@ args = parse()
 terraform_directory = args.terraform_directory
 mode = TerraformMode.APPLY.value if args.mode == 'apply' else TerraformMode.DESTROY.value
 
-template_processor = TemplateProcessor('utils/parameters.j2', f'{terraform_directory}/parameters.tfvars')
+output_parameters_path = os.path.join(terraform_directory, 'parameters.tfvars')
+template_processor = TemplateProcessor('utils/parameters.j2', output_parameters_path)
 template_processor.process(config)
 
 
