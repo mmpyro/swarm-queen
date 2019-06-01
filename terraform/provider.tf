@@ -38,11 +38,3 @@ variable "client_id" {}
 variable "client_secret" {}
 
 variable "tenant_id" {}
-
-output "master_ip" {
-  value = "${module.masters.master_ip}"
-}
-
-output "worker_ip" {
-  value = "${module.workers.worker_ip}"
-}

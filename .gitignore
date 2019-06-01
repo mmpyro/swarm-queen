@@ -19,3 +19,6 @@ orchestrator/Scripts
 **/*/*.pyc
 **/*/*.cfg
 **/*/config.json
+
+#jetBrains
+.idea
