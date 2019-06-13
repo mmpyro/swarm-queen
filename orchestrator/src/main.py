@@ -25,7 +25,7 @@ if mode == TerraformMode.APPLY.value and statusCode == 0:
     statusCode = ProcessManager('bash')\
         .with_cwd(cwd)\
         .with_args('./utils/output.sh')\
-        .with_args(config['azure']['resourceGroup'], config['swarm']['numberOfMasters'])\
+        .with_args(config['azure']['resourceGroup'], config['swarm']['numberOfMasters'], config['swarm']['numberOfWorkers'])\
         .with_args(config['azure']['subscriptionId'], config['azure']['clientId'])\
         .with_args(config['azure']['clientSecret'], config['azure']['tenantId'])\
         .start(lambda data: print(data)).wait()
