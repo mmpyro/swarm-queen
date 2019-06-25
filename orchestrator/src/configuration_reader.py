@@ -2,11 +2,13 @@ import json
 from abc import ABC, abstractclassmethod
 from jsonschema import validate
 
+
 class ConfigValidator(ABC):
 
     @abstractclassmethod
     def validate(self):
         pass
+
 
 class JsonConfigReader(object):
 
@@ -21,6 +23,7 @@ class JsonConfigReader(object):
             for validator in self.__validators:
                 validator.validate(config)
             return config
+
 
 class JsonConfigValidator(ConfigValidator):
 

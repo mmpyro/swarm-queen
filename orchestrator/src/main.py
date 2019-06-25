@@ -1,7 +1,11 @@
 from argument_parser import parse
-from process_manager import ProcessManager
+from azure.authorization import AuthorizationDto
+from azure.azure_http_client import AzureHttpClient
+from inventory.inventory_creator import InventoryCreator
 from enums.terraform_mode import TerraformMode
 from configuration_reader import JsonConfigReader, JsonConfigValidator
+from inventory.inventory_writer import InventoryWriter
+from process_manager import ProcessManager
 from template_processor import TemplateProcessor
 import os
 
@@ -15,19 +19,21 @@ output_parameters_path = os.path.join(terraform_directory, 'parameters.tfvars')
 template_processor = TemplateProcessor('utils/parameters.j2', output_parameters_path)
 template_processor.process(config)
 
-
 statusCode = ProcessManager('terraform').with_cwd(args.terraform_directory)\
     .with_args(mode, '-var-file="parameters.tfvars"', '-auto-approve')\
     .start(lambda data: print(data)).wait()
 print(f'Terraform status code {statusCode}')
 
-if mode == TerraformMode.APPLY.value and statusCode == 0:
-    statusCode = ProcessManager('bash')\
-        .with_cwd(cwd)\
-        .with_args('./utils/output.sh')\
-        .with_args(config['azure']['resourceGroup'], config['swarm']['numberOfMasters'], config['swarm']['numberOfWorkers'])\
-        .with_args(config['azure']['subscriptionId'], config['azure']['clientId'])\
-        .with_args(config['azure']['clientSecret'], config['azure']['tenantId'])\
-        .start(lambda data: print(data)).wait()
-    print(f'az status code {statusCode}')
+if statusCode == 0 and mode == TerraformMode.APPLY.value:
+    subscription_id = config['azure']['subscriptionId']
+    resource_group = config['azure']['resourceGroup']
+    tenant_id = config['azure']['tenantId']
+    client_id = config['azure']['clientId']
+    client_secret = config['azure']['clientSecret']
+
+    inventory_creator = InventoryCreator(AzureHttpClient(), subscription_id, resource_group)
+    inventory = inventory_creator.create(AuthorizationDto(tenant_id, client_id, client_secret))
+    inventory_writer = InventoryWriter('swarm_inventory')
+    inventory_writer.save(inventory)
+
 

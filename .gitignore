@@ -19,6 +19,7 @@ orchestrator/Scripts
 **/*/*.pyc
 **/*/*.cfg
 **/*/config.json
+venv
 
 #jetBrains
 .idea
