@@ -19,7 +19,7 @@ class InventoryCreatorTests(unittest.TestCase):
     def test_return_inventory(self):
         #Given
         inventory_creator = InventoryCreator(self._mock_azure_http_client(), '', '')
-        expected_inventory = """[masters]
+        expected_inventory = """[primal_master]
 master ansible_host=10.0.0.0 ansible_port=22
 [workers]
 worker1 ansible_host=10.0.0.0 ansible_port=50000
