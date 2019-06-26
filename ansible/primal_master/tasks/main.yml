@@ -1,0 +1,80 @@
+---
+- name: Start Docker
+  service:
+    name: docker
+    state: started
+  tags:
+  - primal
+
+- name: determine swarm status
+  shell: "docker info | egrep '^Swarm:' | cut -d ' ' -f2"
+  register: swarm_status
+  tags:
+  - primal
+  - token
+
+- name: Init a new swarm with default parameters
+  docker_swarm:
+    state: present
+  when: "'inactive' in swarm_status.stdout_lines"
+  register: swarm_info
+  tags:
+  - primal
+  - token
+
+- name: turn on drain mode on master
+  shell: "docker node update --availability drain {{ ansible_hostname }}"
+  register: swarm_status
+  tags:
+  - primal
+  - drain
+
+- debug:
+    msg: |
+      "{{swarm_status}}"
+  tags:
+  - token
+
+- name: Fetch worker token
+  shell: docker swarm join-token worker -q
+  register: worker_token
+  tags:
+  - primal
+  - token
+
+- name: Fetch master token
+  shell: docker swarm join-token manager -q
+  register: master_token
+  tags:
+  - primal
+  - token
+
+- name: Fetch master ip
+  shell: ifconfig|grep eth0 -A 1|grep inet|awk '{print $2}'
+  register: master_ip
+  tags:
+  - primal
+  - token
+
+- name: Save swarm token
+  copy:
+    dest: "/home/mm/tokens.json"
+    content: |
+      {
+       "master": "{{master_token.stdout}}",
+       "worker": "{{worker_token.stdout}}",
+       "ip": "{{master_ip.stdout}}",
+      }
+  when: "master_token is defined and worker_token is defined"
+  tags:
+  - primal
+  - token
+
+- name: Fetch tokens.json
+  fetch:
+    src: /home/mm/tokens.json
+    dest: ./tokens.json
+    flat: yes
+  tags:
+  - primal
+  - token

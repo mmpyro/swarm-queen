@@ -1,0 +1,61 @@
+---
+- name: determine swarm status
+  shell: "docker info | egrep '^Swarm:' | cut -d ' ' -f2"
+  register: swarm_status
+  tags:
+  - worker
+
+- name: Extract ip address
+  shell: ifconfig|grep eth0 -A 1|grep inet|awk '{print $2}'
+  register: addvertise_addr
+  when: "'inactive' in swarm_status.stdout_lines"
+  tags:
+  - worker
+
+- name: Copy tokens.json
+  copy:
+    src: ./tokens.json
+    dest: ~/tokens.json
+    mode: '0400'
+  when: "'inactive' in swarm_status.stdout_lines"
+  tags:
+  - worker
+
+- name: Read worker token
+  shell: cat ~/tokens.json|jq .worker|sed "s/\"//g"
+  register: worker_token
+  when: "'inactive' in swarm_status.stdout_lines"
+  tags:
+  - worker
+
+- name: Read master ip
+  shell: cat ~/tokens.json|jq .ip|sed "s/\"//g"
+  register: master_ip
+  when: "'inactive' in swarm_status.stdout_lines"
+  tags:
+  - worker
+
+- name: delete tokens.json
+  file:
+    path: ~/tokens.json
+    state: absent
+  tags:
+  - worker
+
+- debug:
+    msg: |
+      "{{worker_token.stdout}}"
+      "{{master_ip.stdout}}"
+  when: "worker_token.stdout is defined and master_ip.stdout is defined"
+  tags:
+  - worker
+
+- name: Add Worker nodes
+  docker_swarm:
+    state: join
+    join_token: "{{worker_token.stdout}}"
+    remote_addrs: "{{master_ip.stdout}}"
+    advertise_addr: ["{{addvertise_addr.stdout}}"]
+  when: "'inactive' in swarm_status.stdout_lines"
+  tags:
+  - worker

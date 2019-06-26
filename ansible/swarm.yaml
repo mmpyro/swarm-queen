@@ -1,0 +1,14 @@
+- hosts: primal_master
+  roles:
+   - common
+   - primal_master
+
+- hosts: secondary_masters
+  roles:
+   - common
+   - master
+
+- hosts: workers
+  roles:
+   - common
+   - worker
