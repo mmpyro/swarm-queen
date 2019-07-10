@@ -17,7 +17,7 @@ resource "azurerm_network_interface" "master_network_interface" {
     subnet_id                     = "${var.azurerm_subnet_id}"
     private_ip_address_allocation = "Dynamic"
     load_balancer_backend_address_pools_ids = ["${azurerm_lb_backend_address_pool.master_lb_backend.id}"]
-    load_balancer_inbound_nat_rules_ids = ["${azurerm_lb_nat_rule.ssh_nat_rule.*.id[count.index]}"]
+    load_balancer_inbound_nat_rules_ids = ["${azurerm_lb_nat_rule.ssh_nat_rule.*.id[count.index]}", "${azurerm_lb_nat_rule.node_exporter_nat_rule.*.id[count.index]}"]
   }
 }
 

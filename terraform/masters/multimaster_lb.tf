@@ -30,6 +30,18 @@ resource "azurerm_lb_nat_rule" "ssh_nat_rule" {
   depends_on                     = ["azurerm_lb.master_lb"]
 }
 
+resource "azurerm_lb_nat_rule" "node_exporter_nat_rule" {
+  count                          = "${local.number_of_masters}"
+  resource_group_name            = "${var.resource_group_name}"
+  loadbalancer_id                = "${azurerm_lb.master_lb.id}"
+  name                           = "node_exporter_master${count.index}"
+  protocol                       = "Tcp"
+  frontend_port                  = "${9100 + count.index}"
+  backend_port                   = 9100
+  frontend_ip_configuration_name = "PublicIPAddress"
+  depends_on                     = ["azurerm_lb.master_lb"]
+}
+
 resource "azurerm_lb_probe" "docker_port_probe" {
   resource_group_name = "${var.resource_group_name}"
   loadbalancer_id     = "${azurerm_lb.master_lb.id}"

@@ -41,3 +41,7 @@ variable "key_name" {
 variable "key_path" {
   default = ""
 }
+
+variable "node_exporter" {
+  default = ""
+}
