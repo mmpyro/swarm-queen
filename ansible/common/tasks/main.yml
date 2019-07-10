@@ -1,4 +1,12 @@
 ---
+- name: Create downloads directory
+  file:
+    path: /downloads
+    mode: '0777'
+    state: directory
+  tags:
+  - common
+
 - name: Add Docker GPG key
   apt_key: url=https://download.docker.com/linux/ubuntu/gpg
   tags:
@@ -35,5 +43,74 @@
     - packaging
     - msrestazure
     - ansible[azure]
+  tags:
+  - common
+  
+  - name: Add the user node_exporter
+  user:
+    name: node_exporter 
+    shell: /sbin/nologin
+  tags:
+  - common
+
+- name: Node_exporter is installed
+  shell: systemctl list-units|grep node_exporter|wc -l
+  register: node_exporter_status
+  tags:
+  - common
+
+- debug:
+    msg: "{{node_exporter_status.stdout}}"
+  tags:
+  - common
+
+- name: Download node_exporter
+  get_url:
+    url: https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz
+    dest: /downloads/node_exporter.tar.gz
+  when: node_exporter_status.stdout is defined and node_exporter_status.stdout == "0"
+  tags:
+  - common
+
+- name: Extract node_exporter
+  shell: |
+    tar xvfz /downloads/node_exporter.tar.gz --directory /downloads
+    cp -r /downloads/node_exporter-*.*-amd64 /usr/sbin/
+  when: node_exporter_status.stdout is defined and node_exporter_status.stdout == "0"
+  tags:
+  - common
+
+- name: Add node_exporter systemd configuration
+  template:
+    src: node_exporter.service.j2
+    dest: '/etc/systemd/system/node_exporter.service' 
+    owner: root
+    group: root
+    mode: 0755
+  when: node_exporter_status.stdout is defined and node_exporter_status.stdout == "0"
+  tags:
+  - common
+
+- name: Create sysconfig file
+  shell: |
+    mkdir -p /etc/sysconfig
+    echo OPTIONS=\"--collector.textfile.directory /var/lib/node_exporter/textfile_collector\"|tee /etc/sysconfig/node_exporter
+  when: node_exporter_status.stdout is defined and node_exporter_status.stdout == "0"
+  tags:
+  - common
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+  when: node_exporter_status.stdout is defined and node_exporter_status.stdout == "0"
+  tags:
+  - common
+
+- name: Start systemd node_exporter config
+  systemd:
+    name: node_exporter
+    state: started
+    enabled: yes
+  when: node_exporter_status.stdout is defined and node_exporter_status.stdout == "0"
   tags:
   - common
