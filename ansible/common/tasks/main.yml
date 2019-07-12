@@ -45,8 +45,8 @@
     - ansible[azure]
   tags:
   - common
-  
-  - name: Add the user node_exporter
+
+- name: Add the user node_exporter
   user:
     name: node_exporter 
     shell: /sbin/nologin
@@ -75,7 +75,8 @@
 - name: Extract node_exporter
   shell: |
     tar xvfz /downloads/node_exporter.tar.gz --directory /downloads
-    cp -r /downloads/node_exporter-*.*-amd64 /usr/sbin/
+    mv /downloads/node_exporter-*.*-amd64 /downloads/node_exporter
+    cp -r /downloads/node_exporter /usr/sbin/
   when: node_exporter_status.stdout is defined and node_exporter_status.stdout == "0"
   tags:
   - common
