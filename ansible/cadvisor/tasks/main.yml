@@ -1,0 +1,33 @@
+---
+- name: fetch cadvisor
+  shell: "ls /etc/systemd/system|grep cadvisor|wc -l"
+  register: cadvisor_status
+  tags:
+  - cadvisor
+
+- name: Add cadvisor.service
+  template:
+    src: cadvisor.service.j2
+    dest: '/etc/systemd/system/cadvisor.service' 
+    owner: root
+    group: root
+    mode: 0755
+  when: cadvisor_status.stdout is defined and cadvisor_status.stdout == "0"
+  tags:
+  - cadvisor
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+  when: cadvisor_status.stdout is defined and cadvisor_status.stdout == "0"
+  tags:
+  - cadvisor
+
+- name: Start systemd node_exporter config
+  systemd:
+    name: cadvisor
+    state: started
+    enabled: yes
+  when: cadvisor_status.stdout is defined and cadvisor_status.stdout == "0"
+  tags:
+  - cadvisor

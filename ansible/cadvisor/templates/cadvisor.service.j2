@@ -1,0 +1,20 @@
+[Unit]
+Description=cadvisor
+After=network.target docker.socket
+Requires=docker.socket
+
+[Service]
+RestartSec=10
+Restart=always
+TimeoutStartSec=90
+
+Environment="CONTAINER_NAME=%N"
+Environment="IMAGE_NAME=google/cadvisor:v0.33.0"
+
+ExecStartPre=-/usr/bin/docker rm -f $CONTAINER_NAME
+ExecStartPre=-/usr/bin/docker pull $IMAGE_NAME
+ExecStart=/usr/bin/docker run --rm --privileged -p 8081:8080 -v /:/rootfs:ro -v /var/run:/var/run:rw -v /sys:/sys:ro -v /var/lib/docker/:/var/lib/docker:ro --name ${CONTAINER_NAME} ${IMAGE_NAME}
+ExecStop=/usr/bin/docker stop $CONTAINER_NAME
+
+[Install]
+WantedBy=multi-user.target
