@@ -1,5 +1,5 @@
-resource "azurerm_network_security_group" "master_nsg" {
-  name                = "master_nsg"
+resource "azurerm_network_security_group" "swarm_nsg" {
+  name                = "swarm_nsg"
   location            = "${azurerm_resource_group.swarm_cluster_rg.location}"
   resource_group_name = "${azurerm_resource_group.swarm_cluster_rg.name}"
 
@@ -16,7 +16,7 @@ resource "azurerm_network_security_rule" "master_nsg_rules_ssh" {
   source_address_prefix       = "${var.ssh_allowed_source_address}"
   destination_address_prefix  = "*"
   resource_group_name         = "${azurerm_resource_group.swarm_cluster_rg.name}"
-  network_security_group_name = "${azurerm_network_security_group.master_nsg.name}"
+  network_security_group_name = "${azurerm_network_security_group.swarm_nsg.name}"
 }
 
 resource "azurerm_network_security_rule" "master_nsg_rules_dockerAPI" {
@@ -30,5 +30,5 @@ resource "azurerm_network_security_rule" "master_nsg_rules_dockerAPI" {
   source_address_prefix       = "${var.ssh_allowed_source_address}"
   destination_address_prefix  = "*"
   resource_group_name         = "${azurerm_resource_group.swarm_cluster_rg.name}"
-  network_security_group_name = "${azurerm_network_security_group.master_nsg.name}"
+  network_security_group_name = "${azurerm_network_security_group.swarm_nsg.name}"
 }

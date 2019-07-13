@@ -44,6 +44,17 @@ resource "azurerm_lb_nat_pool" "lbnatpool_node_exporter" {
   frontend_ip_configuration_name = "PublicIPAddress"
 }
 
+resource "azurerm_lb_nat_pool" "lbnatpool_cAdvisor" {
+  resource_group_name            = "${var.resource_group_name}"
+  name                           = "cAdvisor"
+  loadbalancer_id                = "${azurerm_lb.worker_lb.id}"
+  protocol                       = "Tcp"
+  frontend_port_start            = 8081
+  frontend_port_end              = 8181
+  backend_port                   = 8081
+  frontend_ip_configuration_name = "PublicIPAddress"
+}
+
 resource "azurerm_virtual_machine_scale_set" "worker_vmss" {
   name                = "worker"
   location            = "${var.location}"
@@ -101,7 +112,8 @@ resource "azurerm_virtual_machine_scale_set" "worker_vmss" {
       primary                                = true
       subnet_id                              = "${var.azurerm_subnet_id}"
       load_balancer_backend_address_pool_ids = ["${azurerm_lb_backend_address_pool.bpepool.id}"]
-      load_balancer_inbound_nat_rules_ids    = ["${element(azurerm_lb_nat_pool.lbnatpool_ssh.*.id, count.index)}", "${element(azurerm_lb_nat_pool.lbnatpool_node_exporter.*.id, count.index)}"]
+      load_balancer_inbound_nat_rules_ids    = ["${element(azurerm_lb_nat_pool.lbnatpool_ssh.*.id, count.index)}",
+        "${element(azurerm_lb_nat_pool.lbnatpool_node_exporter.*.id, count.index)}", "${element(azurerm_lb_nat_pool.lbnatpool_cAdvisor.*.id, count.index)}"]
     }
   }
 

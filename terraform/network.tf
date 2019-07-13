@@ -10,5 +10,5 @@ resource "azurerm_subnet" "internal" {
   resource_group_name  = "${azurerm_resource_group.swarm_cluster_rg.name}"
   virtual_network_name = "${azurerm_virtual_network.main.name}"
   address_prefix       = "10.0.2.0/24"
-  network_security_group_id = "${azurerm_network_security_group.master_nsg.id}"
+  network_security_group_id = "${azurerm_network_security_group.swarm_nsg.id}"
 }

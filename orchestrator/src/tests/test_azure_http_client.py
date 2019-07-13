@@ -45,7 +45,7 @@ class AzureHttpClientTests(unittest.TestCase):
     @mock.patch('requests.get')
     def test_return_load_balancer_nat_pool(self, requests_mock):
         # Given
-        mock_response = self._mock_response(200, '{"properties": { "inboundNatRules": [{"properties": {"frontendPort": 50001} }]} }')
+        mock_response = self._mock_response(200, '{"properties": { "inboundNatRules": [{"name": "ssh.0","properties": {"frontendPort": 50001} }]} }')
         requests_mock.return_value = mock_response
         azure_http_client = AzureHttpClient()
 
