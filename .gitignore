@@ -16,6 +16,7 @@ orchestrator/.idea
 orchestrator/Include
 orchestrator/Lib
 orchestrator/Scripts
+orchestrator/src/swarm_inventory
 **/*/*.pyc
 **/*/*.cfg
 **/*/config.json
@@ -23,3 +24,6 @@ venv
 
 #jetBrains
 .idea
+
+#other
+ansible/tokens.json

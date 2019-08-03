@@ -1,39 +1,48 @@
+import os
 from argument_parser import parse
 from azure.authorization import AuthorizationDto
 from azure.azure_http_client import AzureHttpClient
-from inventory.inventory_creator import InventoryCreator
-from enums.terraform_mode import TerraformMode
+from configuration import Configuration
 from configuration_reader import JsonConfigReader, JsonConfigValidator
+from enums.terraform_mode import TerraformMode
+from inventory.inventory_creator import InventoryCreator
 from inventory.inventory_writer import InventoryWriter
 from process_manager import ProcessManager
 from template_processor import TemplateProcessor
-import os
 
 cwd = os.getcwd()
 config = JsonConfigReader([JsonConfigValidator()]).read(file_name='utils/config.json')
 args = parse()
 terraform_directory = args.terraform_directory
+ansible_directory = args.ansible_directory
 mode = TerraformMode.APPLY.value if args.mode == 'apply' else TerraformMode.DESTROY.value
 
 output_parameters_path = os.path.join(terraform_directory, 'parameters.tfvars')
 template_processor = TemplateProcessor('utils/parameters.j2', output_parameters_path)
 template_processor.process(config)
 
-statusCode = ProcessManager('terraform').with_cwd(args.terraform_directory)\
+status_code = ProcessManager('terraform').with_cwd(args.terraform_directory)\
     .with_args(mode, '-var-file="parameters.tfvars"', '-auto-approve')\
     .start(lambda data: print(data)).wait()
-print(f'Terraform status code {statusCode}')
+print(f'Terraform status code {status_code}')
 
-if statusCode == 0 and mode == TerraformMode.APPLY.value:
-    subscription_id = config['azure']['subscriptionId']
-    resource_group = config['azure']['resourceGroup']
-    tenant_id = config['azure']['tenantId']
-    client_id = config['azure']['clientId']
-    client_secret = config['azure']['clientSecret']
+if status_code == 0 and mode == TerraformMode.APPLY.value:
+    configuration = Configuration(config)
+    tenant_id = configuration.azure.tenant_id
+    client_id = configuration.azure.client_id
+    client_secret = configuration.azure.client_secret
 
-    inventory_creator = InventoryCreator(AzureHttpClient(), subscription_id, resource_group)
+    inventory_creator = InventoryCreator(AzureHttpClient(), configuration)
     inventory = inventory_creator.create(AuthorizationDto(tenant_id, client_id, client_secret))
     inventory_writer = InventoryWriter('swarm_inventory')
     inventory_writer.save(inventory)
+    print('Inventory created')
+    print('Start Ansible')
+    status_code = ProcessManager('ansible-playbook').with_cwd(ansible_directory)\
+    .with_args('-i',f'{cwd}/swarm_inventory', 'swarm.yaml', '-u',
+               configuration.swarm.user_name,'-b',f'--key-file={configuration.swarm.ssh_private_key_full_name}')\
+    .with_env(ANSIBLE_HOST_KEY_CHECKING='False')\
+    .start(lambda data: print(data)).wait()
+    print(f'Ansible has finished with {status_code} code.')
 
 

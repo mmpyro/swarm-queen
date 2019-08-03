@@ -89,6 +89,9 @@ class JsonConfigValidator(ConfigValidator):
                 "sshKeyName": {
                   "type": "string"
                 },
+                "sshPrivateKeyName": {
+                  "type": "string"
+                },
                 "sshKeyPath": {
                   "type": "string"
                 },
@@ -103,6 +106,7 @@ class JsonConfigValidator(ConfigValidator):
                 "workerVmSize",
                 "vmUserName",
                 "sshKeyName",
+                "sshPrivateKeyName",
                 "sshKeyPath",
                 "dockerApiPort"
               ]

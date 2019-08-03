@@ -1,6 +1,6 @@
 ---
 - name: determine swarm status
-  shell: "docker info | egrep '^Swarm:' | cut -d ' ' -f2"
+  shell: "docker info | grep 'Swarm:' | cut -d : -f2|cut -d ' ' -f2"
   register: swarm_status
   tags:
   - worker

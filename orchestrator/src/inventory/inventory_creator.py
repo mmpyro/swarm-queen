@@ -1,38 +1,46 @@
+import time
 from azure.authorization import AuthorizationDto
 from azure.azure_http_client import AzureHttpClient
+from configuration import Configuration
 
 
 class InventoryCreator(object):
 
-    def __init__(self, client: AzureHttpClient, subscription_id: str, resource_group_name: str) -> str:
+    def __init__(self, client: AzureHttpClient, config: Configuration) -> str:
         super().__init__()
+        self.config = config
         self.client = client
-        self.resource_group_name = resource_group_name
-        self.subscription_id = subscription_id
+        self.resource_group_name = config.azure.resource_group
+        self.subscription_id = config.azure.subscription_id
         self.inventory = None
 
-    def create(self, authorizationDto: AuthorizationDto):
+    def create(self, authorization_dto: AuthorizationDto):
         self.inventory = ''
-        token = self.client.getAuthorizationToken(authorizationDto)
+        token = self.client.getAuthorizationToken(authorization_dto)
         ips = dict((self.__format(ip), self.client.getAzurePublicIp(token, self.subscription_id, self.resource_group_name, ip))
              for ip in self.client.getAzurePublicIps(token, self.subscription_id, self.resource_group_name))
 
         lbs = dict((self.__format(lb), self.client.getAzureLoadBalancerNatPool(token, self.subscription_id,
             self.resource_group_name, lb)) for lb in self.client.getAzureLoadBalancers(token, self.subscription_id, self.resource_group_name))
 
-        self._create_primal_master(ips, lbs)
-        self._create_masters(ips, lbs)
-        self._create_workers(ips, lbs)
+        while not self.__validate_nat_ports(lbs):
+            time.sleep(2)
+            lbs = dict((self.__format(lb), self.client.getAzureLoadBalancerNatPool(token, self.subscription_id,
+                          self.resource_group_name, lb)) for lb in self.client.getAzureLoadBalancers(token, self.subscription_id, self.resource_group_name))
+
+        self.__create_primal_master(ips, lbs)
+        self.__create_masters(ips, lbs)
+        self.__create_workers(ips, lbs)
         return self.inventory
 
-    def _create_primal_master(self, ips: dict, lbs: dict) -> None:
+    def __create_primal_master(self, ips: dict, lbs: dict) -> None:
         self.inventory += f'[primal_master]\n'
         if 'master' in lbs:
             self.inventory += f'master ansible_host={ips["master"]} ansible_port={lbs["master"][0]}\n'
         else:
             self.inventory += f'master ansible_host={ips["master"]} ansible_port=22\n'
 
-    def _create_masters(self, ips: dict, lbs: dict) -> None:
+    def __create_masters(self, ips: dict, lbs: dict) -> None:
         if 'master' in lbs and len(lbs['master']) > 1:
             i = 0
             self.inventory += f'[secondary_masters]\n'
@@ -40,12 +48,17 @@ class InventoryCreator(object):
                 i += 1
                 self.inventory += f'master{i} ansible_host={ips["master"]} ansible_port={port}\n'
 
-    def _create_workers(self, ips: dict, lbs: dict) -> None:
+    def __create_workers(self, ips: dict, lbs: dict) -> None:
         i = 0
         self.inventory += '[workers]\n'
         for port in lbs['worker']:
             i += 1
             self.inventory += f'worker{i} ansible_host={ips["worker"]} ansible_port={port}\n'
+
+    def __validate_nat_ports(self, lbs :dict):
+        if len(lbs['master']) > self.config.swarm.masters or len(lbs['worker']) > self.config.swarm.workers:
+            return False
+        return True
 
     @staticmethod
     def __format(azure_resource_name: str):
