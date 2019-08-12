@@ -5,8 +5,8 @@ class SwarmConfig(object):
     def __init__(self, config :dict) -> None:
         super().__init__()
         swarm = config['swarm']
-        self.__number_of_workers = swarm['numberOfMasters']
-        self.__number_of_masters = swarm['numberOfWorkers']
+        self.__number_of_workers = swarm['numberOfWorkers']
+        self.__number_of_masters = swarm['numberOfMasters']
         self.__sshKeyPath = swarm['sshKeyPath']
         self.__sshPrivateKeyName = swarm['sshPrivateKeyName']
         self.__user = swarm['vmUserName']

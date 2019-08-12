@@ -11,8 +11,8 @@ from process_manager import ProcessManager
 from template_processor import TemplateProcessor
 
 cwd = os.getcwd()
-config = JsonConfigReader([JsonConfigValidator()]).read(file_name='utils/config.json')
 args = parse()
+config = JsonConfigReader([JsonConfigValidator()]).read(file_name=args.config)
 terraform_directory = args.terraform_directory
 ansible_directory = args.ansible_directory
 mode = TerraformMode.APPLY.value if args.mode == 'apply' else TerraformMode.DESTROY.value

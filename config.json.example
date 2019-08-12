@@ -16,6 +16,7 @@
     "vmUserName": "mm",
     "sshKeyName": "swarm.pub",
     "sshKeyPath": "/home/operations/ssh",
+    "sshPrivateKeyName": "swarm",
     "dockerApiPort": 2375
   }
 }

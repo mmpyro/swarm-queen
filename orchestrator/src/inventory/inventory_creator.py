@@ -20,18 +20,21 @@ class InventoryCreator(object):
         ips = dict((self.__format(ip), self.client.getAzurePublicIp(token, self.subscription_id, self.resource_group_name, ip))
              for ip in self.client.getAzurePublicIps(token, self.subscription_id, self.resource_group_name))
 
-        lbs = dict((self.__format(lb), self.client.getAzureLoadBalancerNatPool(token, self.subscription_id,
-            self.resource_group_name, lb)) for lb in self.client.getAzureLoadBalancers(token, self.subscription_id, self.resource_group_name))
+        lbs = self.__fill_lb_dict(token)
 
         while not self.__validate_nat_ports(lbs):
             time.sleep(2)
-            lbs = dict((self.__format(lb), self.client.getAzureLoadBalancerNatPool(token, self.subscription_id,
-                          self.resource_group_name, lb)) for lb in self.client.getAzureLoadBalancers(token, self.subscription_id, self.resource_group_name))
+            lbs = self.__fill_lb_dict(token)
 
         self.__create_primal_master(ips, lbs)
         self.__create_masters(ips, lbs)
         self.__create_workers(ips, lbs)
         return self.inventory
+
+    def __fill_lb_dict(self, token: str) -> dict:
+        return dict((self.__format(lb), self.client.getAzureLoadBalancerNatPool(token, self.subscription_id,
+                                                                               self.resource_group_name, lb)) for lb in
+                   self.client.getAzureLoadBalancers(token, self.subscription_id, self.resource_group_name))
 
     def __create_primal_master(self, ips: dict, lbs: dict) -> None:
         self.inventory += f'[primal_master]\n'
@@ -56,7 +59,7 @@ class InventoryCreator(object):
             self.inventory += f'worker{i} ansible_host={ips["worker"]} ansible_port={port}\n'
 
     def __validate_nat_ports(self, lbs :dict):
-        if len(lbs['master']) > self.config.swarm.masters or len(lbs['worker']) > self.config.swarm.workers:
+        if ('master' in lbs and len(lbs['master'])) > self.config.swarm.masters or len(lbs['worker']) > self.config.swarm.workers:
             return False
         return True
 

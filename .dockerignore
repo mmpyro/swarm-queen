@@ -4,6 +4,8 @@ Dockerfile
 **/*/.terraform
 *.tfstate
 **/*/.tfvars
+config.json
+config.json.example
 venv
 
 

@@ -20,6 +20,7 @@ orchestrator/src/swarm_inventory
 **/*/*.pyc
 **/*/*.cfg
 **/*/config.json
+config.json
 venv
 
 #jetBrains
